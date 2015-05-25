@@ -1,0 +1,44 @@
+	body { 
+		background-color: black; 
+		color:white; 
+		margin:10px auto;
+	}
+	.headder { 
+		text-align: center; 
+		font-size: 1.2em; 
+		border-bottom: 1px solid ; 
+	}
+	/* 数値 */
+	#dispno { 
+	/*font-size: 10em; */
+		font-size: 130px; 
+		text-align: center; 
+		vertical-align: middle;
+		line-height: 1;
+	}
+	/* 発表済数値 連番 */
+	#serno { 
+		color: DarksLateGray; 
+	}
+	/* 残りの数 */
+	#nokori { 
+		color: YellowGreen; 
+	}
+	/* 発表済数値 発表順*/
+	#junno { 
+		color: Green; 
+	}
+	
+	button { 
+		font-size:1.5em; 
+		/*align:center;*/
+	}
+	#btn { 
+		text-align : center ;
+	}
+	#nextButton { 
+		width: 70%; 
+	}
+	#resetButton { 
+		width: 25%; 
+	}
