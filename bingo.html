@@ -1,0 +1,300 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+	<title>BINGO</title>
+	<link rel="stylesheet" href="css/style.css">
+	<link rel="stylesheet" href="components/loader.css">
+	<script src="components/loader.js"></script>
+	<script>
+	//////////////////////////
+	// プログラムの初期化
+	//////////////////////////
+	window.onload = function () {
+		// ボタンイベントを設定
+		$("nextButton").onclick = next;
+		$("resetButton").onclick = reset;
+		defaultDisp();
+	};
+
+	//////////////////////////
+	// 初期表示
+	//////////////////////////
+	function defaultDisp() {
+		// 値が初期化されているか確認
+		if (typeof(localStorage.miNo) == "undefined") {
+			initTable();
+		}
+		// 未発表の数字を取り出す
+		var NoTbl = JSON.parse(localStorage.miNo);
+		// 最後まで発表しきったか？
+		if (NoTbl.length == 0) {
+			return;
+		}
+		// 発表済みの数字文字列
+		var JunNo = localStorage.juNo;
+		// 画面に表示
+		$("dispno").innerHTML = "　";
+		$("junno").innerHTML = "発表順:" + "<br />" + JunNo;
+		$("nokori").innerHTML = "残り:" + NoTbl.length + "個";
+		
+		// 発表済みの数字を塗る
+		setSumiColor();
+	}
+
+	//////////////////////////
+	// [次の数字を表示]ボタン
+	//////////////////////////
+	function next() {
+		// 未発表の数字を取り出す
+		var NoTbl = JSON.parse(localStorage.miNo);
+		// 最後まで発表しきったか？
+		if (NoTbl.length == 0) {
+			alert("終了しました。\nリセットして下さい。");
+			return;
+		}
+		// 次の数字
+		var no = NoTbl.shift();
+		// 2桁表記にする
+		no = '0' + no;
+		no = no.substring(no.length - 2, no.length);
+		
+		// 発表済みの数字文字列
+		var JunNo = localStorage.juNo;
+		// 発表済みの数字に、今回の数字を連結
+		JunNo = JunNo + no + ", ";
+		
+		// 発表済み数字[配列]
+		var sumiTbl = JSON.parse(localStorage.deNo);
+		sumiTbl.unshift(no);
+		localStorage.deNo = JSON.stringify(sumiTbl);
+		
+		// アニメーション
+		//$("dispno").innerHTML = "<img src='anime.gif'>";
+		$("dispno").innerHTML = "<div class='run' onclick='toggleAnimation()'></div>";
+		
+		// 画面に表示
+		setTimeout(function(){
+			$("dispno").innerHTML = no;
+			$("junno").innerHTML = "発表順:" + "<br />" + JunNo;
+			$("nokori").innerHTML = "残り:" + NoTbl.length + "個";
+			setSumiColor();
+		}, 1000);// xx秒 待つ
+		
+		// 「未発表数字[配列]」と「発表済み数字順文字列」を保存する
+		localStorage.miNo = JSON.stringify(NoTbl);
+		localStorage.juNo = JunNo;
+	}
+	
+	//////////////////////////
+	// [リセット]ボタン
+	//////////////////////////
+	function reset() {
+		var msg = "リセットしても よろしいですか?";
+		var r = confirm(msg);
+		if (!r) return;
+		initTable();
+		$("dispno").innerHTML = "　";
+		$("junno").innerHTML = "発表順:";
+		$("nokori").innerHTML = "残り:75";
+		//$("serno").innerHTML = "";
+	}
+	
+	//////////////////////////
+	// 初期化処理
+	//////////////////////////
+	function initTable() {
+		// 1から75までの数を[配列]に入れる
+		var NoTbl = [];
+		for (var i = 1; i <= 75; i++) {
+			NoTbl.push(i);
+		}
+		
+		// 数字[配列]をシャッフルする
+		var n = NoTbl.length;
+		var tmp;
+		while (n) {
+			i = Math.floor(Math.random() * n);
+			n--;
+			tmp = NoTbl[n];
+			NoTbl[n] = NoTbl[i];
+			NoTbl[i] = tmp;
+		}
+		//	console.log(NoTbl);
+		
+		// 発表済エリアの背景クリア
+		for (var j = 1; j <= 75; j++) {
+			j = '0' + j;
+			j = j.substring(j.length - 2, j.length);
+			setColoer(j, 0);
+		}
+		
+		// 発表済み数字[配列]
+		var sumiTbl = [];
+		sumiTbl.push(0);
+		
+		// localStorageに保存する
+		localStorage.miNo = JSON.stringify(NoTbl);	//未発表の数字[配列]
+		localStorage.juNo = "";											//発表済み数字順文字列
+		localStorage.deNo = JSON.stringify(sumiTbl);//発表済の数字[配列]
+	}
+
+	//////////////////////////
+	// 発表された数字を開ける
+	//  (白色にする)
+	//////////////////////////
+	function setColoer(id, col) {
+		var spanNo = 'span#no' + id;
+		var sp = document.querySelector(spanNo);
+		if (col == 0) {
+			sp.style.color = "DarksLateGray";
+		} else {
+			sp.style.color = "white";
+		}
+	}
+
+	//////////////////////////
+	// 発表順数値の表示
+	//////////////////////////
+	function setSumiColor() {
+		// 発表済みの番号を取り出して、[配列]に入れる
+		var sumiTbl = JSON.parse(localStorage.deNo);
+		for (var i = 0; i <= sumiTbl.length; i++) {
+			setColoer(sumiTbl[i], 1);
+		}
+		localStorage.deNo = JSON.stringify(sumiTbl);
+	}
+	
+	function $(id) {
+		return document.getElementById(id);
+	}
+	
+	//////////////////////////
+	// イメージクリックにて
+	//  アニメーションストップ
+	//////////////////////////
+	function toggleAnimation() {
+		//$(".run").toggleClass("stop");
+		document.getElementById('run').toggleClass("stop");
+	}
+	</script>
+
+	<style>
+	/* ********************************************************************/
+	/* 背景を左に、スプライトシートの幅分移動させるrunanimeアニメーション */ 
+	/* ********************************************************************/
+	@-webkit-keyframes runanime { 
+		from { background-position: 	 0px; } 
+		to { background-position: -300px; }
+	}
+	.run { 
+		width: 100px;
+		height: 100px;
+		margin-right: auto;
+		margin-left: auto;
+		margin-top: 30px; 
+		/* 使用するスプライトシート */ 
+		background-image: url("count.png");
+		background-size: 300px 100px;	
+		/* runアニメーションをxx秒かけて3ステップ */ 
+		-webkit-animation: runanime 1s steps(3);	
+	}
+	.stop {
+		-webkit-animation: none;
+	}
+	</style>
+
+</head>
+<body>
+	<div class="headder">
+		--- BINGO ---
+	</div>
+	<div id="dispno"></div>
+	<hr />
+	<div id="btn">
+		<button id="nextButton">次の数字</button>
+		<button id="resetButton">ﾘｾｯﾄ</button>
+	</div>
+	<div id="serno">
+		<span id="no01">01</span>,
+		<span id="no02">02</span>,
+		<span id="no03">03</span>,
+		<span id="no04">04</span>,
+		<span id="no05">05</span>,
+		<span id="no06">06</span>,
+		<span id="no07">07</span>,
+		<span id="no08">08</span>,
+		<span id="no09">09</span>,
+		<span id="no10">10</span>,
+		<span id="no11">11</span>,
+		<span id="no12">12</span>,
+		<span id="no13">13</span>,
+		<span id="no14">14</span>,
+		<span id="no15">15</span>,
+		<span id="no16">16</span>,
+		<span id="no17">17</span>,
+		<span id="no18">18</span>,
+		<span id="no19">19</span>,
+		<span id="no20">20</span>,
+		<span id="no21">21</span>,
+		<span id="no22">22</span>,
+		<span id="no23">23</span>,
+		<span id="no24">24</span>,
+		<span id="no25">25</span>,
+		<span id="no26">26</span>,
+		<span id="no27">27</span>,
+		<span id="no28">28</span>,
+		<span id="no29">29</span>,
+		<span id="no30">30</span>,
+		<span id="no31">31</span>,
+		<span id="no32">32</span>,
+		<span id="no33">33</span>,
+		<span id="no34">34</span>,
+		<span id="no35">35</span>,
+		<span id="no36">36</span>,
+		<span id="no37">37</span>,
+		<span id="no38">38</span>,
+		<span id="no39">39</span>,
+		<span id="no40">40</span>,
+		<span id="no41">41</span>,
+		<span id="no42">42</span>,
+		<span id="no43">43</span>,
+		<span id="no44">44</span>,
+		<span id="no45">45</span>,
+		<span id="no46">46</span>,
+		<span id="no47">47</span>,
+		<span id="no48">48</span>,
+		<span id="no49">49</span>,
+		<span id="no50">50</span>,
+		<span id="no51">51</span>,
+		<span id="no52">52</span>,
+		<span id="no53">53</span>,
+		<span id="no54">54</span>,
+		<span id="no55">55</span>,
+		<span id="no56">56</span>,
+		<span id="no57">57</span>,
+		<span id="no58">58</span>,
+		<span id="no59">59</span>,
+		<span id="no60">60</span>,
+		<span id="no61">61</span>,
+		<span id="no62">62</span>,
+		<span id="no63">63</span>,
+		<span id="no64">64</span>,
+		<span id="no65">65</span>,
+		<span id="no66">66</span>,
+		<span id="no67">67</span>,
+		<span id="no68">68</span>,
+		<span id="no69">69</span>,
+		<span id="no70">70</span>,
+		<span id="no71">71</span>,
+		<span id="no72">72</span>,
+		<span id="no73">73</span>,
+		<span id="no74">74</span>,
+		<span id="no75">75</span>
+	</div>
+	<div id="nokori">残り:</div>
+	<div id="junno">発表順:</div>
+	<hr />
+</body>
+</html>
